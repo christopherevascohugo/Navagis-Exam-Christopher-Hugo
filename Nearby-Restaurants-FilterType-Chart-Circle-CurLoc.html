@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Navagis Exam - Christopher Hugo</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+
+ 
+    </style>
+      </head>
+  <body>
+   
+    <div id="floating-panel">
+      Filter restaurant type: &nbsp;
+      <input id="type1" type="checkbox" value="Burger" onclick="initMap();">Burger
+      <input id="type2" type="checkbox" value="Lecon" onclick="initMap();">Lechon
+      <input id="type3" type="checkbox" value="Pizza" onclick="initMap();">Pizza
+       <input id="type4" type="checkbox" value="Seafood" onclick="initMap();">Seafood
+    </div>
+    <div id="map"></div>
+    <script>
+
+
+      var map;
+      var markerlocations;
+
+      function initMap(test) {
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            //infoWindow = new google.maps.InfoWindow;
+            //infoWindow.setPosition(pos);
+            //infoWindow.setContent('Location found.');
+            //infoWindow.open(map);
+            //map.setCenter(pos);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+
+        function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+        infoWindow.open(map);
+        }
+
+
+         var pyrmont = {lat: 10.3787569, lng: 123.7762547};
+          search = test;
+          map = new google.maps.Map(document.getElementById('map'), {
+          center: pyrmont,
+          zoom: 11,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+        });
+
+       
+
+
+        if(document.getElementById('type1').checked == true){
+          var service1 = new google.maps.places.PlacesService(map);
+          service1.nearbySearch({
+            location: pyrmont,
+            radius: 30000,
+            type: ['restaurant'],
+            keyword: "burger"
+          }, callback);
+        }else{
+          
+        }
+
+        if(document.getElementById('type2').checked == true){
+          var service2 = new google.maps.places.PlacesService(map);
+          service2.nearbySearch({
+            location: pyrmont,
+            radius: 40000,
+            type: ['restaurant'],
+            keyword: "Lechon"
+            
+          }, callback);
+        }else{
+          
+        }
+
+        if(document.getElementById('type3').checked == true){
+          var service3 = new google.maps.places.PlacesService(map);
+          service3.nearbySearch({
+            location: pyrmont,
+            radius: 40000,
+            type: ['restaurant'],
+            keyword: "Pizza"
+            
+          }, callback);
+        }else{
+          
+        }
+
+        if(document.getElementById('type4').checked == true){
+          var service4 = new google.maps.places.PlacesService(map);
+          service4.nearbySearch({
+            location: pyrmont,
+            radius: 40000,
+            type: ['restaurant'],
+            keyword: "Seafood"
+            
+          }, callback);
+        }else{
+          
+        }
+
+       
+       if(document.getElementById('type1').checked == false && document.getElementById('type2').checked == false && document.getElementById('type3').checked == false && document.getElementById('type4').checked == false){
+          var serviceAll = new google.maps.places.PlacesService(map);
+          serviceAll.nearbySearch({
+            location: pyrmont,
+            radius: 50000,
+            type: ['restaurant'],
+            
+          }, callback);
+        
+        }
+
+        
+
+       var Circle = new google.maps.Circle({
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            map: map,
+            center: pyrmont,
+            draggable: true,
+            editable: true,
+            radius: 50* 100
+          }) 
+
+          Circle.addListener('bounds_changed', showCircleInfo);
+        
+      }
+      function showCircleInfo(event) {
+        
+      }
+
+      function callback(results, status, pagination) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]);
+      
+          }
+        }
+        if (pagination.hasNextPage) {
+          sleep:2;
+          pagination.nextPage();
+        }
+      }
+  
+      function createMarker(place) {
+        var placeLoc = place.geometry.location;
+        
+        var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+          title: place.name
+
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+        
+         drawChart(this,place.name,place.rating);
+      
+        });
+      }
+    
+
+    
+    </script>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      function drawChart(marker,name,rating) {
+        //alert(rating);
+        // Create the data table.
+        var data = google.visualization.arrayToDataTable([
+        ['Name', 'Ratings'],
+        [name, rating]
+      ]);
+
+      var options = {
+        title: name,
+        chartArea: {width: '50%'},
+        hAxis: {
+          title: 'Position:' + marker.getPosition().toString(),
+          minValue: 0
+        }
+      };
+                       
+        var node        = document.createElement('div'),
+            infoWindow  = new google.maps.InfoWindow(),
+            chart       = new google.visualization.BarChart(node);
+            
+            chart.draw(data, options);
+            infoWindow.setContent(node);
+            infoWindow.open(marker.getMap(),marker);
+      }
+
+
+    </script>
+  
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBppmPCqeQ4n501UvD758Cmhu_T0HplG7E&libraries=places&callback=initMap" async defer></script>
+  </body>
+</html>
